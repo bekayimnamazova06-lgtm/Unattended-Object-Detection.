@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unattended Object Detection System</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --red:#ff2a2a; --amber:#ffb800; --green:#00e87a;
+      --dim:#0a0d0f; --panel:#0e1215; --border:#1e2830; --text:#c8d8e0;
+    }
+    html{scroll-behavior:smooth}
+    body{background:var(--dim);color:var(--text);font-family:'Courier New',monospace;font-size:15px;line-height:1.7;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.06) 2px,rgba(0,0,0,.06) 4px);pointer-events:none;z-index:999}
+    a{color:var(--amber);text-decoration:none}
+    a:hover{text-decoration:underline}
+    header{text-align:center;padding:70px 20px 55px;border-bottom:1px solid var(--border);background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(255,42,42,.1),transparent)}
+    .badge{display:inline-block;font-size:11px;letter-spacing:3px;color:var(--red);border:1px solid var(--red);padding:4px 14px;margin-bottom:28px;animation:blink 2s ease-in-out infinite}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+    h1{font-family:'Arial Black',Arial,sans-serif;font-size:clamp(1.8rem,5vw,3.4rem);font-weight:900;text-transform:uppercase;letter-spacing:2px;color:#fff;line-height:1.1}
+    h1 em{color:var(--red);font-style:normal}
+    .sub{margin-top:14px;font-size:12px;letter-spacing:2px;color:#3a5060}
+    .btn-row{margin-top:36px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+    .btn{display:inline-block;font-size:12px;letter-spacing:2px;text-transform:uppercase;padding:11px 26px;border:1px solid;transition:background .2s,color .2s}
+    .btn-red{background:var(--red);border-color:var(--red);color:#fff}
+    .btn-red:hover{background:transparent;color:var(--red);text-decoration:none}
+    .btn-ghost{background:transparent;border-color:var(--border);color:var(--text)}
+    .btn-ghost:hover{border-color:#fff;color:#fff;text-decoration:none}
+    .wrap{max-width:940px;margin:0 auto;padding:64px 20px}
+    .sec-label{font-size:10px;letter-spacing:4px;color:var(--red);text-transform:uppercase;margin-bottom:10px}
+    h2{font-family:'Arial Black',Arial,sans-serif;font-size:clamp(1.2rem,3vw,1.8rem);font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#fff;margin-bottom:32px}
+    hr{border:none;border-top:1px solid var(--border)}
+    .window{background:var(--panel);border:1px solid var(--border);overflow:hidden;margin-bottom:40px}
+    .titlebar{background:#080b0d;border-bottom:1px solid var(--border);padding:9px 14px;display:flex;align-items:center;gap:8px}
+    .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .dr{background:var(--red)}.da{background:var(--amber)}.dg{background:var(--green)}
+    .titlebar-text{font-size:11px;color:#2a4050;margin-left:6px}
+    .canvas{position:relative;background:#060809;aspect-ratio:16/9;overflow:hidden}
+    .canvas::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(30,40,48,.4) 1px,transparent 1px),linear-gradient(90deg,rgba(30,40,48,.4) 1px,transparent 1px);background-size:40px 40px}
+    .co{position:absolute;width:18px;height:18px}
+    .co-tl{top:10px;left:10px;border-top:2px solid var(--red);border-left:2px solid var(--red)}
+    .co-tr{top:10px;right:10px;border-top:2px solid var(--red);border-right:2px solid var(--red)}
+    .co-bl{bottom:10px;left:10px;border-bottom:2px solid var(--red);border-left:2px solid var(--red)}
+    .co-br{bottom:10px;right:10px;border-bottom:2px solid var(--red);border-right:2px solid var(--red)}
+    .warn-banner{position:absolute;top:0;left:0;right:0;background:rgba(180,0,0,.82);color:#fff;font-size:13px;letter-spacing:2px;text-align:center;padding:8px;animation:blink 1s ease-in-out infinite;z-index:2}
+    .box{position:absolute;border:2px solid}
+    .box-g{border-color:var(--green);top:28%;left:12%;width:20%;height:32%;animation:fadeB 2s ease-in-out infinite}
+    .box-r{border-color:var(--red);top:38%;right:18%;width:18%;height:30%;animation:flashB 1s ease-in-out infinite}
+    @keyframes fadeB{0%,100%{opacity:1}50%{opacity:.6}}
+    @keyframes flashB{0%,100%{opacity:1;box-shadow:0 0 12px rgba(255,42,42,.5)}50%{opacity:.7;box-shadow:none}}
+    .lbl{position:absolute;font-size:10px;padding:2px 6px;background:rgba(6,8,9,.85)}
+    .lbl-g{color:var(--green);border:1px solid var(--green);top:calc(28% - 20px);left:12%}
+    .lbl-r{color:var(--red);border:1px solid var(--red);top:calc(38% - 20px);right:18%}
+    .timer{position:absolute;color:var(--green);font-size:10px;top:calc(28% + 32% + 4px);left:12%}
+    .hud{position:absolute;bottom:10px;left:12px;font-size:10px;color:#2a4050}
+    .ts{position:absolute;top:36px;right:12px;font-size:10px;color:#2a4050}
+    .stats{display:flex;gap:1px;background:var(--border);border:1px solid var(--border)}
+    .stat{flex:1;background:var(--panel);padding:18px 10px;text-align:center}
+    .stat-v{display:block;font-size:clamp(1.3rem,3vw,1.9rem);color:#fff;font-family:'Arial Black',sans-serif}
+    .stat-v.r{color:var(--red)}.stat-v.g{color:var(--green)}.stat-v.a{color:var(--amber)}
+    .stat-l{font-size:10px;letter-spacing:2px;color:#3a5060;text-transform:uppercase;margin-top:4px}
+    .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1px;background:var(--border);border:1px solid var(--border)}
+    .feat{background:var(--panel);padding:26px 22px;transition:background .2s}
+    .feat:hover{background:#111820}
+    .feat-icon{font-size:22px;margin-bottom:12px}
+    .feat h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#fff;margin-bottom:8px}
+    .feat p{font-size:12px;color:#5a7080;line-height:1.6}
+    .flow{display:flex;flex-direction:column}
+    .fstep{display:flex;gap:18px}
+    .fleft{display:flex;flex-direction:column;align-items:center}
+    .fdot{width:10px;height:10px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:5px}
+    .fline{width:1px;flex:1;background:var(--border);min-height:28px}
+    .fcontent{padding-bottom:24px}
+    .fcontent h4{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#fff;margin-bottom:4px}
+    .fcontent p{font-size:12px;color:#5a7080}
+    .code{background:#060809;border:1px solid var(--border);border-left:3px solid var(--red);padding:20px 22px;font-size:13px;color:#8ab4c8;overflow-x:auto;line-height:1.9;white-space:pre}
+    .cm{color:#2a4050}.kw{color:var(--amber)}
+    .techs{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+    .tech{background:var(--panel);border:1px solid var(--border);padding:18px}
+    .tech-n{color:var(--amber);font-size:14px;display:block;margin-bottom:4px}
+    .tech-r{color:#5a7080;font-size:12px}
+    .future{list-style:none;display:flex;flex-direction:column;gap:10px}
+    .future li{display:flex;align-items:center;gap:12px;font-size:13px;color:#8aa0b0;padding:13px 16px;background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--border);transition:border-color .2s,color .2s}
+    .future li:hover{border-left-color:var(--amber);color:var(--text)}
+    .future li::before{content:'&#8594;';color:var(--amber);font-size:12px}
+    footer{border-top:1px solid var(--border);padding:28px 20px;text-align:center;font-size:11px;letter-spacing:1px;color:#2a3a44}
+    footer span{color:var(--red)}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="badge">LIVE SYSTEM &nbsp;&middot;&nbsp; AI SURVEILLANCE</div>
+  <h1>Unattended<br><em>Object Detection</em></h1>
+  <p class="sub">YOLOv8 &nbsp;&middot;&nbsp; OpenCV &nbsp;&middot;&nbsp; Python &nbsp;&middot;&nbsp; Real-Time Tracking</p>
+  <div class="btn-row">
+    <a class="btn btn-red" href="https://github.com/YOUR_USERNAME/unattended-object-detection">View on GitHub</a>
+    <a class="btn btn-ghost" href="#how-it-works">How It Works</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <p class="sec-label">// Live Preview</p>
+  <h2>System Output</h2>
+  <div class="window">
+    <div class="titlebar">
+      <div class="dot dr"></div><div class="dot da"></div><div class="dot dg"></div>
+      <span class="titlebar-text">camera_feed_01 &mdash; Unattended Object Detection v1.0</span>
+    </div>
+    <div class="canvas">
+      <div class="co co-tl"></div><div class="co co-tr"></div>
+      <div class="co co-bl"></div><div class="co co-br"></div>
+      <div class="warn-banner">&#9888; WARNING: Unattended object detected!</div>
+      <div class="box box-g"></div>
+      <div class="lbl lbl-g">backpack 87%</div>
+      <div class="timer">Timer: 2.4s</div>
+      <div class="box box-r"></div>
+      <div class="lbl lbl-r">suitcase 91% &middot; UNATTENDED!</div>
+      <div class="ts">2026-04-30 &middot; 14:22:11</div>
+      <div class="hud">Objects tracked: 2</div>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><span class="stat-v g">3</span><div class="stat-l">Object Classes</div></div>
+    <div class="stat"><span class="stat-v a">5s</span><div class="stat-l">Alert Threshold</div></div>
+    <div class="stat"><span class="stat-v r">LIVE</span><div class="stat-l">Processing</div></div>
+    <div class="stat"><span class="stat-v">YOLOv8n</span><div class="stat-l">Model</div></div>
+  </div>
+</div>
+
+<hr />
+
+<div class="wrap">
+  <p class="sec-label">// Capabilities</p>
+  <h2>Features</h2>
+  <div class="features">
+    <div class="feat"><div class="feat-icon">&#128269;</div><h3>Real-Time Detection</h3><p>YOLOv8 nano runs on every frame &mdash; detecting backpacks, handbags, and suitcases with confidence scoring.</p></div>
+    <div class="feat"><div class="feat-icon">&#129504;</div><h3>Centroid Tracking</h3><p>Each object gets a unique ID tracked across frames using nearest-centroid matching. New objects register automatically.</p></div>
+    <div class="feat"><div class="feat-icon">&#9201;</div><h3>Per-Object Timer</h3><p>Every tracked object has its own stationary timer. Movement resets the clock. Stillness counts down to the alert.</p></div>
+    <div class="feat"><div class="feat-icon">&#128680;</div><h3>Visual Warnings</h3><p>Unattended objects get a red bounding box and "UNATTENDED!" label. A full-width banner appears at the top.</p></div>
+    <div class="feat"><div class="feat-icon">&#127917;</div><h3>Configurable</h3><p>Adjust the alert timer, movement tolerance, and confidence threshold with simple constants in main.py.</p></div>
+    <div class="feat"><div class="feat-icon">&#128249;</div><h3>Webcam or Video</h3><p>Works with a live webcam or any video file &mdash; change one line in the source configuration.</p></div>
+  </div>
+</div>
+
+<hr />
+
+<div class="wrap" id="how-it-works">
+  <p class="sec-label">// Architecture</p>
+  <h2>How It Works</h2>
+  <div class="flow">
+    <div class="fstep"><div class="fleft"><div class="fdot"></div><div class="fline"></div></div><div class="fcontent"><h4>1 &middot; Video Frame Capture</h4><p>OpenCV reads each frame from webcam or video file at native FPS.</p></div></div>
+    <div class="fstep"><div class="fleft"><div class="fdot"></div><div class="fline"></div></div><div class="fcontent"><h4>2 &middot; YOLOv8 Inference</h4><p>Frame passed to YOLOv8. Results filtered to backpack / handbag / suitcase with confidence &ge; 0.4.</p></div></div>
+    <div class="fstep"><div class="fleft"><div class="fdot"></div><div class="fline"></div></div><div class="fcontent"><h4>3 &middot; Centroid Extraction</h4><p>Each bounding box center is computed and fed to the ObjectTracker.</p></div></div>
+    <div class="fstep"><div class="fleft"><div class="fdot"></div><div class="fline"></div></div><div class="fcontent"><h4>4 &middot; Track Matching</h4><p>New centroids matched to existing tracks by Euclidean distance. Unmatched detections spawn new tracks.</p></div></div>
+    <div class="fstep"><div class="fleft"><div class="fdot"></div><div class="fline"></div></div><div class="fcontent"><h4>5 &middot; Stationary Timer</h4><p>Object moves &gt;30px &rarr; reset timer. Stays still &rarr; timer accumulates. At 5s &rarr; UNATTENDED.</p></div></div>
+    <div class="fstep"><div class="fleft"><div class="fdot"></div></div><div class="fcontent"><h4>6 &middot; Annotated Output</h4><p>Frame drawn with bounding boxes, labels, timers, and warning overlays via cv2.imshow().</p></div></div>
+  </div>
+</div>
+
+<hr />
+
+<div class="wrap">
+  <p class="sec-label">// Installation</p>
+  <h2>Quick Start</h2>
+  <div class="code"><span class="cm"># 1. Clone the repo</span>
+<span class="kw">git</span> clone https://github.com/YOUR_USERNAME/unattended-object-detection.git
+<span class="kw">cd</span> unattended-object-detection
+
+<span class="cm"># 2. Create virtual environment</span>
+<span class="kw">python</span> -m venv venv
+<span class="kw">source</span> venv/bin/activate   <span class="cm"># Windows: venv\Scripts\activate</span>
+
+<span class="cm"># 3. Install dependencies</span>
+<span class="kw">pip</span> install -r requirements.txt
+
+<span class="cm"># 4. Run</span>
+<span class="kw">python</span> main.py</div>
+</div>
+
+<hr />
+
+<div class="wrap">
+  <p class="sec-label">// Stack</p>
+  <h2>Technologies</h2>
+  <div class="techs">
+    <div class="tech"><span class="tech-n">Python 3.10+</span><span class="tech-r">Core language</span></div>
+    <div class="tech"><span class="tech-n">YOLOv8 (Ultralytics)</span><span class="tech-r">Object detection model</span></div>
+    <div class="tech"><span class="tech-n">OpenCV</span><span class="tech-r">Video capture &amp; drawing</span></div>
+    <div class="tech"><span class="tech-n">NumPy</span><span class="tech-r">Array &amp; math operations</span></div>
+  </div>
+</div>
+
+<hr />
+
+<div class="wrap">
+  <p class="sec-label">// Roadmap</p>
+  <h2>Future Improvements</h2>
+  <ul class="future">
+    <li>Multi-camera support &mdash; monitor several feeds simultaneously</li>
+    <li>Person association &mdash; alert only when owner walks away</li>
+    <li>Email / SMS alerts via Twilio or SMTP</li>
+    <li>Event logging &mdash; save timestamps and screenshots</li>
+    <li>Web dashboard &mdash; stream annotated video via Flask</li>
+    <li>DeepSORT / ByteTrack &mdash; more robust multi-object tracking</li>
+    <li>GPU acceleration &mdash; CUDA support for higher FPS</li>
+  </ul>
+</div>
+
+<footer>
+  Built with <span>&hearts;</span> using Python &middot; OpenCV &middot; YOLOv8<br>
+  AI &amp; Prompt Engineering &mdash; Final Project
+</footer>
+
+</body>
+</html>
